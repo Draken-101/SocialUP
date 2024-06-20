@@ -61,7 +61,7 @@ export async function putProfile(req: Request, res: Response) {
             const resAmigo = Clients.find((client: any) => client.idUser === amigo);
             if (resAmigo !== undefined) {
                 resAmigo.res.write(`event:updateContact\n`);
-                resAmigo.res.write(`data:${JSON.stringify({ updateUser })}\n\n`);
+                resAmigo.res.write(`data:${JSON.stringify( { profilePictureUrl: updateUser?.profilePictureUrl, username: updateUser?.username, idUser: updateUser?._id } )}\n\n`);
             }
         })
         console.log("id: | ", req.body.idUser1, " | Cliente atendido | ");

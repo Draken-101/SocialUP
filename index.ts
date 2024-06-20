@@ -24,14 +24,14 @@ app.use(express.json());
 app.use('/profile', RouteProfile)
 
 app.use(`/validate`, RouteValidate);
-
-app.use(`/users`, RoutesUsers);
-
+  
+app.use(`/users`, RoutesUsers); 
+ 
 app.use(`/clients`, RoutesClients);
 
-app.use(`/chat`, RoutesChat);
+app.use(`/chat`, RoutesChat); 
 
-app.use(`/estados`, RoutesEstados);
+app.use(`/estados`, RoutesEstados); 
 
 const server = createServer(app);
 
@@ -43,10 +43,14 @@ wss.on('connection', (ws) => {
     ws.send(JSON.stringify({
         message: '🚀 ¡Prepárate para una experiencia increíble! La cuenta regresiva ha comenzado. ⏳💥'
     }))
-    console.log("Cliente Conectado");
     ws.on('message', async (data) => {
         const dataJson = JSON.parse(data.toString());
         const userId: any = dataJson.idUser1;
+            console.log("Cliente | ", userId, " |");
+        if (!clients.get(userId)) {
+            console.log("Cliente | ", !clients.get(userId), " |");
+            clients.delete(userId);
+        }
         clients.set(userId, ws);
         switch (dataJson.event) {
             case 'sendMessage':
@@ -71,6 +75,14 @@ wss.on('connection', (ws) => {
                 break;
         }
     })
+
+    ws.on('close', () => {
+        const userId = [...clients.entries()].find(([_key, client]) => client === ws)?.[0];
+        if (userId) {
+            clients.delete(userId);
+            console.log(`Cliente ${userId} desconectado`);
+        }
+    });
 });
 
 server.listen(3000, () => {

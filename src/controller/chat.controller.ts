@@ -52,17 +52,16 @@ export async function getChats(req: Request, res: Response) {
 export async function sendMessage(chatId: any, message: string, idUser1: string, idUser2: string, clients: any) {
     try {
         const horaActual = obtenerHoraExacta();
+        const newMessage = {
+            idUser: idUser1,
+            mensaje: message,
+            date: horaActual
+        };
         if (!chatId) {
             const participantes = [idUser1, idUser2];
             const newChat = new Chat({
                 participantes,
-                mensajes: [
-                    {
-                        idUser: idUser1,
-                        mensaje: message,
-                        date: horaActual
-                    }
-                ]
+                mensajes: [newMessage]
             })
             await User.findByIdAndUpdate(idUser1, { $push: { amigos: idUser2 } });
             await User.findByIdAndUpdate(idUser2, { $push: { amigos: idUser1 } });
@@ -72,19 +71,12 @@ export async function sendMessage(chatId: any, message: string, idUser1: string,
                 event: "newChat",
                 newChat: chatGuardado
             }));
-            return { error: false, event: 'newChat', message: "Chat creado con exito", newChat: chatGuardado }
+            return { error: false, event: 'newChat', message: "Chat creado con exito", idUser2: idUser2, lastMessage: message, newChat: chatGuardado }
         }
         const chat = await Chat.findOneAndUpdate(
             { _id: chatId },
             {
-                $push: {
-                    mensajes:
-                    {
-                        idUser: idUser1,
-                        mensaje: message,
-                        date: horaActual
-                    }
-                }
+                $push: { mensajes: newMessage }
             }
             , { new: true }
         );
@@ -94,12 +86,13 @@ export async function sendMessage(chatId: any, message: string, idUser1: string,
         const ws = clients.get(idUser2);
 
         ws?.send(JSON.stringify({
-            event: "newMessage",
-            idUserSend: idUser1,
-            newMessage: chat.mensajes[chat.mensajes.length - 1]
+            event: "newMessageReciver",
+            chatId: chatId,
+            newMessage: newMessage,
+            id: idUser1,
         }))
-
-        return { error: false, event: 'newMessage', message: "Mensaje enviado con exito", newMessage: chat.mensajes[chat.mensajes.length - 1] }
+        
+        return { error: false, event: 'newMessageSender', chatId: chatId, id: idUser2, message: "Mensaje enviado con exito", newMessage: newMessage }
     } catch (error) {
         console.error(error);
         return { error: true, message: "Hubo un error al obtener el chat." };

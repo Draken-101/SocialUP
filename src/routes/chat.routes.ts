@@ -4,6 +4,6 @@ import { getChats } from '../controller/chat.controller';
 
 const RoutesChat = express.Router();
 
-RoutesChat.get('/', getChats);
+RoutesChat.get('/:idUser1', getChats);
 
 export default RoutesChat;

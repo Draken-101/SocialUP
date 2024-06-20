@@ -34,10 +34,10 @@ export async function getData(req: Request, res: Response) {
     const amigos: string[] = await User.find({ amigos: idUser1 });
 
     res.write(`event:userContacts\n`);
-    res.write(`data:${ await getUserContacts(idUser1)}\n\n`);
+    res.write(`data:${await getUserContacts(idUser1)}\n\n`);
 
     res.write(`event:allContacts\n`);
-    res.write(`data:${ await getAllContacts(idUser1, amigos)}\n\n`);
+    res.write(`data:${await getAllContacts(idUser1, amigos)}\n\n`);
 
 }
 
@@ -57,9 +57,9 @@ async function getUserContacts(idUser1: string) {
         let newUser: any = user;
         let estados = await estado.find({ idUser: user._doc._id.toString() })
         if (estados.length > 0) {
-            return newUser = { ...newUser._doc, estados: estados, lastMessage: resultado.length > 0 ? resultado[0].ultimoMensaje : null };
+            return newUser = { ...newUser._doc, estados: estados, noReads: 0, lastMessage: resultado.length > 0 ? resultado[0].ultimoMensaje : null };
         }
-        return { ...newUser._doc, lastMessage: resultado.length > 0 ? resultado[0].ultimoMensaje : null };
+        return { ...newUser._doc, noReads: 0, lastMessage: resultado.length > 0 ? resultado[0].ultimoMensaje : null };
     }));
     return JSON.stringify(users);
 }
