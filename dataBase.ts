@@ -1,5 +1,5 @@
 
-import mongoose from 'mongoose';
+import mongoose from 'mongoose'; 
 
 require('dotenv').config();
 const dbUri = process.env.URI_DATABASE || "";
@@ -12,7 +12,7 @@ mongoose.connect(dbUri, {})
         console.log(`
             Oops! ¡Hubo un error al conectar a la base de datos! 😔🔥
             ---------------------------------------------------------
-            ${error}
+            ${error} 
             ---------------------------------------------------------
         `);
     })

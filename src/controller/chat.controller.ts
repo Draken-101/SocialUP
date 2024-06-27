@@ -3,6 +3,7 @@ import config from "../config";
 import Chat from "../models/chat";
 import User from "../models/User";
 import { Request, Response } from "express";
+import chat from "../models/chat";
 
 const obtenerHoraExacta = () => {
     const fecha = new Date();
@@ -49,16 +50,28 @@ export async function getChats(req: Request, res: Response) {
     }
 }
 
+export async function putStatusRecibido(req: Request, res: Response) {
+    try {
+        const { chatId } = req.body;
+        await chat.findOneAndUpdate({ _id: chatId }, {})
+    } catch (error) {
+        console.log(error);
+    }
+}
+
 export async function sendMessage(chatId: any, message: string, idUser1: string, idUser2: string, clients: any) {
     try {
+        const ws = clients.get(idUser2);
         const horaActual = obtenerHoraExacta();
         const newMessage = {
             idUser: idUser1,
             mensaje: message,
+            status: 0,
             date: horaActual
         };
         if (!chatId) {
             const participantes = [idUser1, idUser2];
+            const newContact = await User.find({ _id: idUser2 });
             const newChat = new Chat({
                 participantes,
                 mensajes: [newMessage]
@@ -66,12 +79,13 @@ export async function sendMessage(chatId: any, message: string, idUser1: string,
             await User.findByIdAndUpdate(idUser1, { $push: { amigos: idUser2 } });
             await User.findByIdAndUpdate(idUser2, { $push: { amigos: idUser1 } });
             const chatGuardado = await newChat.save();
-            const ws = clients.get(idUser2);
             ws?.send(JSON.stringify({
-                event: "newChat",
-                newChat: chatGuardado
+                event: "newChatReciber",
+                newChat: chatGuardado,
+                lastMessage: newMessage,
+                newContact: newContact,
             }));
-            return { error: false, event: 'newChat', message: "Chat creado con exito", idUser2: idUser2, lastMessage: message, newChat: chatGuardado }
+            return { error: false, event: 'newChatSender', message: "Chat creado con exito", reciber: idUser2, lastMessage: newMessage, newChat: chatGuardado }
         }
         const chat = await Chat.findOneAndUpdate(
             { _id: chatId },
@@ -83,7 +97,6 @@ export async function sendMessage(chatId: any, message: string, idUser1: string,
         if (!chat) {
             return { error: true, message: "Chat no encontrado" }
         }
-        const ws = clients.get(idUser2);
 
         ws?.send(JSON.stringify({
             event: "newMessageReciver",
@@ -91,7 +104,7 @@ export async function sendMessage(chatId: any, message: string, idUser1: string,
             newMessage: newMessage,
             id: idUser1,
         }))
-        
+
         return { error: false, event: 'newMessageSender', chatId: chatId, id: idUser2, message: "Mensaje enviado con exito", newMessage: newMessage }
     } catch (error) {
         console.error(error);

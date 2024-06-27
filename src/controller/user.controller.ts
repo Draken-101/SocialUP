@@ -32,11 +32,12 @@ export const signUp = async (req: Request, res: Response) => {
     const { username, password } = req.body;
     try {
         const allProfiles = await Profile.find();
-        const profile = allProfiles[Math.floor(Math.random() * (allProfiles.length + 1))].url;
+        const profile = allProfiles[Math.floor(Math.random() * (allProfiles.length + 1))];
+        console.log(profile.url);
         const newUser = new User({
             username,
             password: await User.encryptPassword(password),
-            profilePictureUrl: profile
+            profilePictureUrl: profile.url
         });
 
         const savedUser: any = await newUser.save();
@@ -61,7 +62,7 @@ export async function putProfile(req: Request, res: Response) {
             const resAmigo = Clients.find((client: any) => client.idUser === amigo);
             if (resAmigo !== undefined) {
                 resAmigo.res.write(`event:updateContact\n`);
-                resAmigo.res.write(`data:${JSON.stringify( { profilePictureUrl: updateUser?.profilePictureUrl, username: updateUser?.username, idUser: updateUser?._id } )}\n\n`);
+                resAmigo.res.write(`data:${JSON.stringify({ profilePictureUrl: updateUser?.profilePictureUrl, username: updateUser?.username, idUser: updateUser?._id })}\n\n`);
             }
         })
         console.log("id: | ", req.body.idUser1, " | Cliente atendido | ");

@@ -9,6 +9,7 @@ const chatSchema = new Schema<chatDocument>({
     {
       idUser: { type: String, required: true },
       mensaje: { type: String, required: true },
+      status: { type: Number, require: true},
       date: { type: String, required: true}
     }
   ]

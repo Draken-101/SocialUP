@@ -5,7 +5,7 @@ import express from 'express';
 import RouteProfile from './src/routes/profile.routes';
 import RouteValidate from './src/routes/validate.routes'
 import { sendMessage, validation } from './src/controller/chat.controller';
-import cors from 'cors';
+import cors from 'cors'; 
 import RoutesUsers from './src/routes/user.routes';
 import RoutesEstados from './src/routes/estado.routes';
 import RoutesClients from './src/routes/clients.routes';
